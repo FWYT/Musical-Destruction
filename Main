@@ -1,0 +1,2972 @@
+import direct.directbase.DirectStart
+from direct.showbase.DirectObject import DirectObject
+from panda3d.physics import BaseParticleEmitter,BaseParticleRenderer
+from panda3d.physics import PointParticleFactory,SpriteParticleRenderer
+from panda3d.physics import LinearNoiseForce,DiscEmitter
+from panda3d.core import CollisionTraverser,CollisionNode
+from panda3d.core import CollisionHandlerQueue,CollisionRay
+from panda3d.core import AmbientLight,DirectionalLight,LightAttrib
+from panda3d.core import TextNode
+from panda3d.core import Point3,Vec3,Vec4,BitMask32
+from direct.gui.OnscreenText import OnscreenText
+from direct.particles.Particles import Particles
+from direct.particles.ParticleEffect import ParticleEffect
+from direct.particles.ForceGroup import ForceGroup
+from panda3d.core import Filename
+from pandac.PandaModules import TextNode
+from direct.gui.DirectGui import DirectFrame, DirectLabel, DirectSlider
+from direct.gui.DirectGui import DirectButton, DirectScrolledList, DGG
+from MusicFileDialog import FileDialog
+from direct.task.Task import Task
+from direct.interval.IntervalGlobal import * 
+import math
+import copy
+import sys
+import id3reader #http://nedbatchelder.com/code/modules/id3reader.html
+import unicodedata
+import random
+
+#Frances Tso
+
+#PointAtZ, SquarePos, and SquareColor, square.egg, and env.egg from sample program "Chess" from Panda3D
+#All images from google
+
+
+
+class StartScreen(DirectObject):
+    def __init__(self):
+        self.titleScreen()
+
+    def titleScreen(self):
+        base.setBackgroundColor( 0, 0, 0 )
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Musical Destruction", 
+                                 scale = 0.09,
+                                 text_pos=(-14.3,-3),
+                                 text_scale=(2.5,2.5),
+                                 pos= (1.2, 0, 0.7), 
+                                 frameSize = (-15, 9, -6, 1), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        text="Start Game"
+        startGame=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.2),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.startGame)
+        startGame.reparentTo(self.frame)
+
+        text="Instructions"
+        instructions=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.4),   
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.instructions)
+        instructions.reparentTo(self.frame)
+
+    def startGame(self):
+        self.frame.removeNode()
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Story", 
+                                 scale = 0.17,
+                                 pos= (0.7, 0, 0.6), 
+                                 frameSize = (-0.2, 2.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        textFrame= DirectFrame(frameSize = (-1, 1, -0.7, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        textFrame.setPos(0.9, 0, -0.2)
+        textFrame.reparentTo(self.frame)
+
+        story="""After years of fighting in instrument destruction
+tournaments, Gary has been invited to battle in an
+exhibition match against Maloy, the king's son. Help
+him defeat his opponent!"""
+    
+
+        story = DirectLabel(text = story, 
+                                 scale = 0.07,
+                                 pos= (-0.9, 0, 0.3), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0, 0, 0, 0),
+                                 text_align = TextNode.ALeft)
+        story.reparentTo(textFrame)
+
+        text="Next"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.start)
+        back.reparentTo(self.frame)
+
+    def start(self):
+        self.frame.removeNode()
+        options=beforeBattleOptions()
+        
+        
+
+    def instructions(self):
+        self.frame.removeNode()
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Instructions", 
+                                 scale = 0.17,
+                                 pos= (0.4, 0, 0.6), 
+                                 frameSize = (-0.2, 5.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        #options buttons
+
+        text="Battle"
+        battle=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,0.2),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.battle)
+        battle.reparentTo(self.frame)
+
+        text="Creating Monster"
+        create=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,0),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.create)
+        create.reparentTo(self.frame)
+
+        text="Fuse Monster"
+        fuse=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.2),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.fuse)
+        fuse.reparentTo(self.frame)
+
+        text="Equipment"
+        equi=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.4),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.equipment)
+        equi.reparentTo(self.frame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.back)
+        back.reparentTo(self.frame)
+
+    def back(self):
+        self.frame.removeNode()
+        self.titleScreen()
+
+    def insBack(self):
+        self.frame.removeNode()
+        self.instructions()
+
+    def battle(self):
+        self.frame.removeNode()
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Battle", 
+                                 scale = 0.17,
+                                 pos= (0.7, 0, 0.6), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        textFrame= DirectFrame(frameSize = (-1, 1, -0.7, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        textFrame.setPos(0.9, 0, -0.2)
+        textFrame.reparentTo(self.frame)
+
+        instructions="""-Health points of your pieces and the enemy pieces are on
+  the top two corners.
+-Drag and release to move.
+-Click on red squares to attack.
+-Defeat all enemy pieces to win."""
+    
+
+        ins = DirectLabel(text = instructions, 
+                                 scale = 0.07,
+                                 pos= (-0.9, 0, 0.3), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0, 0, 0, 0),
+                                 text_align = TextNode.ALeft)
+        ins.reparentTo(textFrame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.insBack)
+        back.reparentTo(self.frame)
+
+    def create(self):
+        self.frame.removeNode()
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Create Monster", 
+                                 scale = 0.17,
+                                 pos= (0.3, 0, 0.6), 
+                                 frameSize = (-0.2, 7.4, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        textFrame= DirectFrame(frameSize = (-1, 1, -0.7, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        textFrame.setPos(0.9, 0, -0.2)
+        textFrame.reparentTo(self.frame)
+
+        instructions="""-Choose 'Create' in the options menu to open file dialog.
+-Select a mp3 file.
+-A new instrument will be created using the mp3 file's
+  metadata."""
+
+        ins = DirectLabel(text = instructions, 
+                                 scale = 0.07,
+                                 pos= (-0.9, 0, 0.3), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0, 0, 0, 0),
+                                 text_align = TextNode.ALeft)
+        ins.reparentTo(textFrame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.insBack)
+        back.reparentTo(self.frame)
+
+    def fuse(self):
+        self.frame.removeNode()
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Fuse", 
+                                 scale = 0.17,
+                                 pos= (0.7, 0, 0.6), 
+                                 frameSize = (-0.2, 2.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        textFrame= DirectFrame(frameSize = (-1, 1, -0.7, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        textFrame.setPos(0.9, 0, -0.2)
+        textFrame.reparentTo(self.frame)
+
+        instructions="""-Two ways to fuse:Power Up and Fusion.
+-Power up
+    -Choose a base instrument.
+    -Choose a power-up instrument.
+    -The base instrument's stat will be increased
+      using the power-up instrument's stats.
+    -You will lose the power-up instrument.
+-Fusion
+    -Choose the first instrument.
+    -Choose the second instrument.
+    -A new instrument will be created using the two chosen
+      instruments.
+    -You will lose the first two instruments."""
+
+        ins = DirectLabel(text = instructions, 
+                                 scale = 0.07,
+                                 pos= (-0.9, 0, 0.5), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0, 0, 0, 0),
+                                 text_align = TextNode.ALeft)
+        ins.reparentTo(textFrame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.insBack)
+        back.reparentTo(self.frame)
+
+
+
+    def equipment(self):
+        self.frame.removeNode()
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "Equipment", 
+                                 scale = 0.17,
+                                 pos= (0.5, 0, 0.6), 
+                                 frameSize = (-0.2, 5.2, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        textFrame= DirectFrame(frameSize = (-1, 1, -0.7, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        textFrame.setPos(0.9, 0, -0.2)
+        textFrame.reparentTo(self.frame)
+
+        instructions="""-Buy stat increases to increase the stats of
+  your instrument.
+-Choose 'Get Gold' to receive an amount of gold to use
+  at the store.
+-Choose 'Store' to buy stat increases and apply them
+  to your instruments."""
+
+        ins = DirectLabel(text = instructions, 
+                                 scale = 0.07,
+                                 pos= (-0.9, 0, 0.3), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0, 0, 0, 0),
+                                 text_align = TextNode.ALeft)
+        ins.reparentTo(textFrame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.5),
+                               pos=(0.9,0,-0.7),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.insBack)
+        back.reparentTo(self.frame)
+
+######################################################################################
+
+class beforeBattleOptions(DirectObject):
+    pieces=[]
+    ViolinStat=None
+    TrumpetStat=None
+    StringBassStat=None
+    FluteStat=None
+    PianoStat=None
+    MicrophoneStat=None
+    MusicNotesStat=None
+    Violin2Stat={"level":6, "attackPower":30,"hp":120,"defense":4,"moveRange":2,"attackRange":2,
+                 "speed":2.0,"type":"String","instrument":"Violin"}
+    MusicNotes2Stat={"level":4, "attackPower":20,"hp":80,"defense":3,"moveRange":2,"attackRange":2,
+                     "speed":2.0,"type":"Band","instrument":"Trumpet"}
+    Piano2Stat={"level":2, "attackPower":10,"hp":40,"defense":7,"moveRange":4,"attackRange":3,
+                "speed":3.0,"type":"Voice","instrument":"Piano"}
+    Trumpet2Stat={"level":5, "attackPower":25,"hp":100,"defense":5,"moveRange":1,"attackRange":2,
+                  "speed":2.0,"type":"Band","instrument":"Trumpet"}
+    Flute2Stat={"level":10, "attackPower":50,"hp":200,"defense":9,"moveRange":3,"attackRange":2,
+                "speed":5.0,"type":"Band","instrument":"Flute"}
+    Microphone2Stat={"level":12, "attackPower":60,"hp":240,"defense":5,"moveRange":1,"attackRange":2,
+                      "speed":3.0,"type":"Voice","instrument":"Microphone"}
+    StringBass2Stat={"level":11, "attackPower":55,"hp":220,"defense":12,"moveRange":2,"attackRange":2,
+                     "speed":2.0,"type":"String","instrument":"StringBass"}
+    
+
+    
+    
+    def __init__(self):
+        self.optionsScreen()
+        self.gold=None
+        
+                                                
+        
+
+    def optionsScreen(self, delete=0):
+        if (delete==2):
+            #from create monster, have to remove 3D render as well
+            self.frame.removeNode()
+            ins=eval("self."+self.monsterData["instrument"]+"R")
+            ins.detachNode()
+            
+        elif (delete==1):
+            self.frame.removeNode()
+            
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0, 0, 0, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        backFrame=DirectFrame(frameSize = (0.4, 1.4, -0.7, 0.8),
+                               frameColor = (0, 0.4, 0.9, 0.6),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))
+        backFrame.reparentTo(self.frame)
+
+        #all options buttons
+
+        text="Create Instrument"
+        create=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,0.6),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.openDialog)
+        create.reparentTo(self.frame)
+
+
+        text="Power-Up"
+        create=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,0.3),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.selectBase)
+        create.reparentTo(self.frame)
+
+        text="Fuse Instruments"
+        fuse=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,0),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.selectFirst)
+        fuse.reparentTo(self.frame)
+
+        text="Get Gold"
+        gold=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,-0.3),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.getGold)
+        gold.reparentTo(self.frame)
+
+        text="Store"
+        equi=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,-0.6),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.store)
+        equi.reparentTo(self.frame)
+
+        text="Choose Battle Instruments"
+        battle=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.6,0,-0.9),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.chooseMonsters)
+        battle.reparentTo(self.frame)
+
+#####################################################Create##############################################################
+    def openDialog(self):
+        self.frame.removeNode()
+
+        base.disableMouse()
+        fileDialog=FileDialog("Open", '',
+                              "mp3", self.musicMetadata)
+        
+        self.musicMeta=dict()
+        self.monsterData=dict()
+
+    def musicMetadata(self, path):
+        if (path==None):
+            return None
+        else:
+            #construct reader
+            id3r=id3reader.Reader(path)
+            self.musicMeta["performer"]=id3r.getValue("performer")
+            self.musicMeta["title"]=id3r.getValue("title")
+            self.musicMeta["track"]=id3r.getValue("track")
+            self.musicMeta["year"]=id3r.getValue("year")
+            self.musicMeta["BPM"]=id3r.getValue("TBPM")
+            self.combine()
+           
+            
+
+    def combine(self):
+        self.determineLevelAndHp()
+        self.determineAttackPowerAndRange()
+        self.determineDefenseAndMoveRange()
+        self.determineSpeed()
+        self.determineInstrumentC()
+        self.displayMonster()
+        
+
+    def duplicateInstrumentC(self):
+        text="You already have this instrument."
+        self.backFrame = DirectFrame(frameSize = (0.2, 1.8, -0.15, 0.2),
+                                   frameColor = (0.4, 0.9, 0.9, 1),
+                                   )
+        self.backFrame.reparentTo(self.frame)
+            
+        dup=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1,0,0),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[2])
+        dup.reparentTo(self.backFrame)
+        
+        
+
+    def addNewDictionaryC(self):
+        if (self.monsterData["instrument"]=="Violin"):
+            beforeBattleOptions.ViolinStat=self.monsterData
+        elif (self.monsterData["instrument"]=="StringBass"):
+            beforeBattleOptions.StringBassStat=self.monsterData
+        elif (self.monsterData["instrument"]=="Trumpet"):
+            beforeBattleOptions.TrumpetStat=self.monsterData
+        elif (self.monsterData["instrument"]=="Flute"):
+            beforeBattleOptions.FluteStat=self.monsterData
+        elif (self.monsterData["instrument"]=="Piano"):
+            beforeBattleOptions.PianoStat=self.monsterData
+        elif (self.monsterData["instrument"]=="Microphone"):
+            beforeBattleOptions.MicrophoneStat=self.monsterData
+        elif (self.monsterData["instrument"]=="MusicNotes"):
+            beforeBattleOptions.MusicNotesStat=self.monsterData
+
+    def determineLevelAndHp(self):
+        level=1
+        #metadata is unicode, convert to string
+        if (self.musicMeta["BPM"]!=None):
+            BPMpre=unicodedata.normalize('NFKD',
+                                     self.musicMeta["BPM"]).encode('ascii',
+                                                                   'ignore')
+            BPM=int(float(BPMpre))
+            if (BPM%4==0):
+                level=2
+            elif (BPM%5==0):
+                level=3
+            elif (BPM%6==0):
+                level=4
+            elif (BPM%7==0):
+                level=5
+            elif (BPM%8==0):
+                level=6
+            elif (BPM%9==0):
+                level=7
+        self.monsterData["level"]=level
+        hp=20*level
+        self.monsterData["hp"]=hp
+
+    def determineAttackPowerAndRange(self):
+        variability=0
+        if (self.musicMeta["track"]!=None):
+            trackpre=unicodedata.normalize('NFKD',
+                                     self.musicMeta["track"]).encode('ascii',
+                                                                   'ignore')
+            track=int(float(trackpre))
+            if (1<=track<=3):
+                variability=2
+            elif (4<=track<=6):
+                variability=5
+            elif (7<=track<=9):
+                variability=8
+            elif (10<=track<=12):
+                variability=11
+            elif (13<=track<=15):
+                variability=14
+        level=self.monsterData["level"]
+        baseAttackPower=5*level
+        variability=random.randint((variability*-1), variability)
+        attackPower=baseAttackPower+variability
+        self.monsterData["attackPower"]=attackPower
+        if (variability>=0):
+            variability="+" + str(variability)
+        self.monsterData["attackPower var"]=str(variability)
+        attackRange=int(abs(attackPower)**0.5)
+        if (attackRange>5):
+            attackRange=5
+        self.monsterData["attackRange"]=attackRange
+            
+        
+
+    def determineDefenseAndMoveRange(self):
+        variability=0
+        if (self.musicMeta["year"]!=None):
+            yearpre=unicodedata.normalize('NFKD',
+                                     self.musicMeta["year"]).encode('ascii',
+                                                                   'ignore')
+            variability=int(yearpre[-1])
+        variability=random.randint((variability*-1), variability)
+        level=self.monsterData["level"]
+        baseDefense=2*level
+        defense=baseDefense+variability
+        self.monsterData["defense"]=defense
+        if (variability>=0):
+            variability="+" + str(variability)
+        self.monsterData["defense var"]=str(variability)
+        moveRange=int(abs(defense)**0.5)
+        if (moveRange>4):
+            moveRange=4
+        self.monsterData["moveRange"]=moveRange
+
+    def determineSpeed(self):
+        variability=0
+        if (self.musicMeta["title"]!=None):
+            titlepre=unicodedata.normalize('NFKD',
+                                     self.musicMeta["title"]).encode('ascii',
+                                                                   'ignore')
+            lengthTitle=len(titlepre)
+            if (1<=lengthTitle<=5):
+                variability=1
+            elif (6<=lengthTitle<=10):
+                variability=0.8
+            elif (11<=lengthTitle<=15):
+                variability=0.6
+            elif (16<=lengthTitle<=20):
+                variability=0.4
+            elif (21<=lengthTitle<=25):
+                variability=0.2
+        level=self.monsterData["level"]
+        baseSpeed=0.2*level
+        variability=random.uniform((variability*-1), variability)
+        speed=round(baseSpeed+variability)
+        if (speed>10):
+            speed=10
+        self.monsterData["speed"]=speed
+        variability=round(float(variability),1)
+        if (variability>=0.0):
+            variability="+" + str(variability)
+        self.monsterData["speed var"]=str(variability)
+
+    def determineInstrumentC(self):
+        InsCat=["String", "Band", "Voice", "Special"]
+        InsType=InsCat[3]
+        if (self.musicMeta["performer"]!=None):
+            titlepre=unicodedata.normalize('NFKD',
+                                     self.musicMeta["performer"]).encode('ascii',
+                                                                   'ignore')
+            first=titlepre[0].lower()
+            if ("a"<=first<="h"):
+                InsType=InsCat[0]
+            elif ("i"<=first<="p"):
+                InsType=InsCat[1]
+            elif ("q"<=first<="z"):
+                InsType=InsCat[2]
+        String=["StringBass", "Violin"]
+        Band=["Trumpet", "Flute"]
+        Voice=["Microphone","Piano"]
+        Special="MusicNotes"
+        if (self.musicMeta["performer"]!=None):
+            last=titlepre[-1].lower()
+        if (InsType=="Special"):
+            Ins=Special
+        elif ("a"<=last<="m"):
+            Ins=eval(InsType)[0]
+        else:
+            Ins=eval(InsType)[1]
+        self.monsterData["type"]=InsType
+        self.monsterData["instrument"]=Ins
+        
+        
+          
+
+    def displayMonster(self):
+        self.frame = DirectFrame(frameSize = (0.8, 2.3, -1, 1),
+                               frameColor = (1, 0.9, 0.9, 0.3),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        title = DirectLabel(text = "New Instrument!", 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0.9), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        title.reparentTo(self.frame)
+
+        
+        
+        #secondary frame
+        self.fullFrame = DirectFrame(frameSize = (0.9, 2.2, -0.97, 0.85),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.fullFrame.reparentTo(self.frame)
+        
+        #frame for showing stats
+        self.statFrame = DirectFrame(frameSize = (1, 2.1, -0.8, 0.7),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.statFrame.reparentTo(self.frame)
+
+        #display stats inside stat frame
+        InsMsg= self.monsterData["instrument"]
+        Ins = DirectLabel(text = InsMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        Ins.reparentTo(self.statFrame)
+        
+        TypeMsg= "Type: " + self.monsterData["type"]
+        InsType = DirectLabel(text = TypeMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        InsType.reparentTo(self.statFrame)
+
+        if (self.monsterData["instrument"] in beforeBattleOptions.pieces):
+            self.duplicateInstrumentC()
+
+        else:
+
+            levelMsg= "Level: " + str(self.monsterData["level"])
+            level = DirectLabel(text = levelMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.1), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            level.reparentTo(self.statFrame)
+
+            hpMsg= "HP: " + str(self.monsterData["hp"])
+            hp = DirectLabel(text = hpMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.2), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            hp.reparentTo(self.statFrame)
+
+            attackMsg= "Attack: " + str(self.monsterData["attackPower"])
+            variabilityMsg="         " + self.monsterData["attackPower var"]
+            attackMsg=attackMsg+variabilityMsg
+            attack = DirectLabel(text = attackMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.3), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            attack.reparentTo(self.statFrame)
+
+            aRangeMsg= "Attack Range: " + str(self.monsterData["attackRange"])
+            aRange = DirectLabel(text = aRangeMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.4), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            aRange.reparentTo(self.statFrame)
+
+            defenseMsg= "Defense: " + str(self.monsterData["defense"])
+            variabilityMsg="       "  + self.monsterData["defense var"]
+            defenseMsg=defenseMsg+variabilityMsg
+            defense = DirectLabel(text = defenseMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.5), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            defense.reparentTo(self.statFrame)
+
+            mRangeMsg= "Move Range: " + str(self.monsterData["moveRange"])
+            mRange = DirectLabel(text = mRangeMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.6), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            mRange.reparentTo(self.statFrame)
+
+            speedMsg= "Speed: " + str(self.monsterData["speed"])
+            variabilityMsg="    " + self.monsterData["speed var"]
+            speedMsg=speedMsg+variabilityMsg
+            speed = DirectLabel(text = speedMsg, 
+                                     scale = 0.09,
+                                     pos= (1.2, 0, -0.7), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            speed.reparentTo(self.statFrame)
+
+            self.addNewDictionaryC()
+            beforeBattleOptions.pieces+=[self.monsterData["instrument"]]
+
+        text="OK"
+        ok=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.95,0,-0.85),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[2])
+        ok.reparentTo(self.frame)
+        
+        
+
+        #show instrument
+        if (self.monsterData["instrument"]=="Violin"):
+            self.ViolinR=loader.loadModel("TermProject/violinScaled2")
+            self.ViolinR.reparentTo(render)
+            Violin_tex=loader.loadTexture("TermProject/wood.jpg")        
+            self.ViolinR.setTexture(Violin_tex,1)
+            self.ViolinR.setPos(-0.6,3,-0.3)
+            self.ViolinR.setScale(0.4)
+            self.ViolinR.setH(180)
+            
+        elif (self.monsterData["instrument"]=="Flute"):
+            self.FluteR=loader.loadModel("TermProject/flute")
+            Flute_tex=loader.loadTexture("TermProject/flutemetal.jpg")        
+            self.FluteR.setTexture(Flute_tex,1)
+            self.FluteR.reparentTo(render)
+            self.FluteR.setPos(-0.6,3,-0.1)
+            self.FluteR.setScale(0.2)
+            self.FluteR.setP(90)
+            
+        elif (self.monsterData["instrument"]=="StringBass"):
+            self.StringBassR=loader.loadModel("TermProject/bass")
+            StringBass_tex=loader.loadTexture("TermProject/wood2.jpg")        
+            self.StringBassR.setTexture(StringBass_tex,1)
+            self.StringBassR.reparentTo(render)
+            self.StringBassR.setPos(-0.6,3,-0.1)
+            self.StringBassR.setScale(0.4)
+            self.StringBassR.setP(90)
+
+        elif (self.monsterData["instrument"]=="Trumpet"):
+            self.TrumpetR=loader.loadModel("TermProject/trumpet")
+            Trumpet_tex=loader.loadTexture("TermProject/brass.jpg")        
+            self.TrumpetR.setTexture(Trumpet_tex,1)
+            self.TrumpetR.reparentTo(render)
+            self.TrumpetR.setPos(-0.6,3,0)
+            self.TrumpetR.setScale(0.08)
+            self.TrumpetR.setH(110)
+        
+        elif (self.monsterData["instrument"]=="Piano"):
+            self.PianoR=loader.loadModel("TermProject/piano")
+            Piano_tex=loader.loadTexture("TermProject/pianowood.jpg")        
+            self.PianoR.setTexture(Piano_tex,1)
+            self.PianoR.reparentTo(render)
+            self.PianoR.setPos(-0.7,3,-0.3)
+            self.PianoR.setScale(0.5)
+            self.PianoR.setH(80)
+
+        elif (self.monsterData["instrument"]=="Microphone"):
+            self.MicrophoneR=loader.loadModel("TermProject/microphone")
+            Microphone_tex=loader.loadTexture("TermProject/metalm.jpg")        
+            self.MicrophoneR.setTexture(Microphone_tex,1)
+            self.MicrophoneR.reparentTo(render)
+            self.MicrophoneR.setPos(-0.6,3,0)
+            self.MicrophoneR.setScale(0.5)
+            self.MicrophoneR.setH(80)
+
+        elif (self.monsterData["instrument"]=="MusicNotes"):
+            self.MusicNotesR=loader.loadModel("TermProject/musicnotes")
+            MusicNotes_tex=loader.loadTexture("TermProject/white.jpg")        
+            self.MusicNotesR.setTexture(MusicNotes_tex,1)
+            self.MusicNotesR.reparentTo(render)
+            self.MusicNotesR.setPos(-0.7,3,-0.3)
+            self.MusicNotesR.setScale(0.4)
+            self.MusicNotesR.setP(80)
+####################################################power up#############################################################
+    def selectBase(self):
+        self.frame.removeNode()
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0, 0, 0, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        
+
+        
+
+
+        #right half
+        self.firstFrame = DirectFrame(frameSize = (0.9, 2.2, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.firstFrame.reparentTo(self.frame)
+        
+
+        self.rightFrame = DirectFrame(frameSize = (1, 2.1, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.rightFrame.reparentTo(self.firstFrame)
+
+        #left half
+        self.secondFrame = DirectFrame(frameSize = (-0.4, 0.85, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.secondFrame.reparentTo(self.frame)
+        
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(-0.27,0,0.87),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                               extraArgs=[1])
+        back.reparentTo(self.secondFrame)
+
+        
+
+        self.leftFrame = DirectFrame(frameSize = (-0.3, 0.75, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.leftFrame.reparentTo(self.secondFrame)
+
+        heading = DirectLabel(text = "Base Monster", 
+                                 scale = 0.09,
+                                 pos= (-0.07, 0, 0.8), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.leftFrame)
+
+        if (len(beforeBattleOptions.pieces)<2):
+            text="You don't have enough pieces."
+            self.backFrame = DirectFrame(frameSize = (0.2, 1.8, -0.15, 0.2),
+                                       frameColor = (0.4, 0.9, 0.9, 1),
+                                       )
+            self.backFrame.reparentTo(self.frame)
+                
+            dup=DirectButton(text = (text, text, text, text), 
+                                   frameColor = (1, 1, 1, 0.7),
+                                   pos=(1,0,0),
+                                   text_scale = 0.1, borderWidth = (0.01, 0.01),
+                                   relief=2,
+                                   command = self.optionsScreen,
+                                    extraArgs=[1])
+            dup.reparentTo(self.backFrame)
+
+        baseMonster=[]
+        for instrument in beforeBattleOptions.pieces:
+            ins = DirectButton(text = (instrument,instrument, instrument,
+                                       instrument), 
+                             frameColor = (0, 0, 0, 0),
+                             borderWidth = (0.005, 0.005),
+                             text_scale = 0.07, 
+                             command = self.selectPowerUp, 
+                             extraArgs = [instrument])
+            baseMonster.append(ins)
+
+        #make scroll list
+        baseMonsterScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (-0.3, 0.6, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (0.15, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (0.15, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (0.15, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = baseMonster, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        baseMonsterScroll.reparentTo(self.leftFrame)
+
+    def selectPowerUp(self,base):
+        self.baseMonster=base
+
+        #display chosen base monster
+        text="Base Monster: "+ base
+        baseM = DirectLabel(text = text, 
+                                 scale = 0.07,
+                                 pos= (-0.2, 0, -0.87), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0),
+                                 text_align = TextNode.ALeft)
+        baseM.reparentTo(self.leftFrame)
+        
+        heading = DirectLabel(text = "Power Up Monster", 
+                                 scale = 0.09,
+                                 pos= (1.17, 0, 0.8), 
+                                 frameSize = (-0.2, 8.6, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.rightFrame)
+
+        #display power up monsters, can't be same as base monster
+        powerUpMonster=[]
+        for instrument in beforeBattleOptions.pieces:
+            if (instrument!=base):
+                ins = DirectButton(text = (instrument,instrument, instrument,
+                                           instrument), 
+                                 frameColor = (0, 0, 0, 0),
+                                 borderWidth = (0.005, 0.005),
+                                 text_scale = 0.07, 
+                                 command = self.powerUp, 
+                                 extraArgs = [instrument])
+                powerUpMonster.append(ins)
+
+        PowerUpScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (1, 1.95, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (1.45, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (1.45, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (1.45, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = powerUpMonster, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        PowerUpScroll.reparentTo(self.rightFrame)
+                            
+    
+    def powerUp(self,powerUp):
+        self.rightFrame.removeNode()
+        self.leftFrame.removeNode()
+
+        #redraw frames
+        self.rightFrame = DirectFrame(frameSize = (1, 2.1, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.rightFrame.reparentTo(self.firstFrame)
+
+        self.leftFrame = DirectFrame(frameSize = (-0.3, 0.75, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.leftFrame.reparentTo(self.secondFrame)
+
+        heading = DirectLabel(text = "Base Monster", 
+                                 scale = 0.09,
+                                 pos= (-0.07, 0, 0.8), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.leftFrame)
+
+        #on the left, display base monster
+        baseMonster=eval("beforeBattleOptions."+self.baseMonster+"Stat")
+        InsMsg= baseMonster["instrument"]
+        Ins = DirectLabel(text = InsMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, 0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        Ins.reparentTo(self.leftFrame)
+
+        TypeMsg= "Type: " + baseMonster["type"]
+        InsType = DirectLabel(text = TypeMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, 0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        InsType.reparentTo(self.leftFrame)
+
+        levelMsg= "Level: " + str(baseMonster["level"])
+        level = DirectLabel(text = levelMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, 0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        level.reparentTo(self.leftFrame)
+
+        hpMsg= "HP: " + str(baseMonster["hp"])
+        hp = DirectLabel(text = hpMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, 0), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        hp.reparentTo(self.leftFrame)
+
+        attackMsg= "Attack: " + str(baseMonster["attackPower"])
+        attack = DirectLabel(text = attackMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, -0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        attack.reparentTo(self.leftFrame)
+
+        aRangeMsg= "Attack Range: " + str(baseMonster["attackRange"])
+        aRange = DirectLabel(text = aRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, -0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        aRange.reparentTo(self.leftFrame)
+
+        defenseMsg= "Defense: " + str(baseMonster["defense"])
+        defense = DirectLabel(text = defenseMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, -0.3), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        defense.reparentTo(self.leftFrame)
+
+        mRangeMsg= "Move Range: " + str(baseMonster["moveRange"])
+        mRange = DirectLabel(text = mRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, -0.4), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        mRange.reparentTo(self.leftFrame)
+
+        speedMsg= "Speed: " + str(baseMonster["speed"])
+        speed = DirectLabel(text = speedMsg, 
+                                 scale = 0.09,
+                                 pos= (-0.1, 0, -0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        speed.reparentTo(self.leftFrame)
+
+        ###display new stats
+        new = DirectLabel(text = "New Stats!", 
+                                 scale = 0.09,
+                                 pos= (1.32, 0, 0.8), 
+                                 frameSize = (-0.2, 5.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        new.reparentTo(self.rightFrame)
+
+        powerUpMonster=eval("beforeBattleOptions."+powerUp+"Stat")
+
+        
+    
+        baseMonster["level"]=int(baseMonster["level"]+
+                                    (0.5*
+                                     (powerUpMonster["level"])))
+        baseMonster["hp"]=int(baseMonster["hp"]+
+                                    (0.5*
+                                     (powerUpMonster["hp"])))
+        baseMonster["attackPower"]=int(baseMonster["attackPower"]+
+                                    (0.5*
+                                     (powerUpMonster["attackPower"])
+                                     ))
+        baseMonster["attackRange"]=int(baseMonster["attackRange"]+
+                                    (0.5*
+                                     (powerUpMonster["attackRange"])))
+        if (baseMonster["attackRange"]>5):
+            baseMonster["attackRange"]=5
+        baseMonster["defense"]=int(baseMonster["defense"]+
+                                    (0.5*
+                                     (powerUpMonster["defense"])))
+        baseMonster["moveRange"]=int(baseMonster["moveRange"]+
+                                    (0.5*
+                                     (powerUpMonster["moveRange"])))
+        if (baseMonster["moveRange"]>4):
+            baseMonster["moveRange"]=4
+        baseMonster["speed"]=round(baseMonster["speed"]+
+                                    (0.5*
+                                     (powerUpMonster["speed"])))
+        if (baseMonster["speed"]>10.0):
+            baseMonster["speed"]=10.0
+
+        
+
+        InsMsg= baseMonster["instrument"]
+        Ins = DirectLabel(text = InsMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        Ins.reparentTo(self.rightFrame)
+
+        TypeMsg= "Type: " + baseMonster["type"]
+        InsType = DirectLabel(text = TypeMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        InsType.reparentTo(self.rightFrame)
+
+        levelMsg= "Level: " + str(baseMonster["level"])
+        level = DirectLabel(text = levelMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        level.reparentTo(self.rightFrame)
+
+        hpMsg= "HP: " + str(baseMonster["hp"])
+        hp = DirectLabel(text = hpMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, 0), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        hp.reparentTo(self.rightFrame)
+
+        attackMsg= "Attack: " + str(baseMonster["attackPower"])
+        attack = DirectLabel(text = attackMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, -0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        attack.reparentTo(self.rightFrame)
+
+        aRangeMsg= "Attack Range: " + str(baseMonster["attackRange"])
+        aRange = DirectLabel(text = aRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, -0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        aRange.reparentTo(self.rightFrame)
+
+        defenseMsg= "Defense: " + str(baseMonster["defense"])
+        defense = DirectLabel(text = defenseMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, -0.3), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        defense.reparentTo(self.rightFrame)
+
+        mRangeMsg= "Move Range: " + str(baseMonster["moveRange"])
+        mRange = DirectLabel(text = mRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, -0.4), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        mRange.reparentTo(self.rightFrame)
+
+        speedMsg= "Speed: " + str(baseMonster["speed"])
+        speed = DirectLabel(text = speedMsg, 
+                                 scale = 0.09,
+                                 pos= (1.2, 0, -0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        speed.reparentTo(self.rightFrame)
+
+        beforeBattleOptions.pieces.remove(powerUp)
+
+        text="OK"
+        ok=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.95,0,-0.85),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[1])
+        ok.reparentTo(self.firstFrame)
+
+########################################################Fuse Monster###################################################
+    def selectFirst(self):
+        self.frame.removeNode()
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0, 0, 0, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        
+
+        
+
+
+        #right half
+        self.firstFrame = DirectFrame(frameSize = (0.9, 2.2, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.firstFrame.reparentTo(self.frame)
+        
+
+        self.rightFrame = DirectFrame(frameSize = (1, 2.1, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.rightFrame.reparentTo(self.firstFrame)
+
+        #left half
+        self.secondFrame = DirectFrame(frameSize = (-0.4, 0.85, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.secondFrame.reparentTo(self.frame)
+        
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(-0.27,0,0.87),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                               extraArgs=[1])
+        back.reparentTo(self.secondFrame)
+
+        
+
+        self.leftFrame = DirectFrame(frameSize = (-0.3, 0.75, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.leftFrame.reparentTo(self.secondFrame)
+
+        heading = DirectLabel(text = "First Monster", 
+                                 scale = 0.09,
+                                 pos= (-0.07, 0, 0.8), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.leftFrame)
+
+        if (len(beforeBattleOptions.pieces)<2):
+            text="You don't have enough pieces."
+            self.backFrame = DirectFrame(frameSize = (0.2, 1.8, -0.15, 0.2),
+                                       frameColor = (0.4, 0.9, 0.9, 1),
+                                       )
+            self.backFrame.reparentTo(self.frame)
+                
+            dup=DirectButton(text = (text, text, text, text), 
+                                   frameColor = (1, 1, 1, 0.7),
+                                   pos=(1,0,0),
+                                   text_scale = 0.1, borderWidth = (0.01, 0.01),
+                                   relief=2,
+                                   command = self.optionsScreen,
+                                    extraArgs=[1])
+            dup.reparentTo(self.backFrame)
+        
+
+        firstMonster=[]
+        for instrument in beforeBattleOptions.pieces:
+            ins = DirectButton(text = (instrument,instrument, instrument,
+                                       instrument), 
+                             frameColor = (0, 0, 0, 0),
+                             borderWidth = (0.005, 0.005),
+                             text_scale = 0.07, 
+                             command = self.selectSecond, 
+                             extraArgs = [instrument])
+            firstMonster.append(ins)
+
+        #make scroll list
+        firstMonsterScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (-0.3, 0.6, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (0.15, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (0.15, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (0.15, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = firstMonster, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        firstMonsterScroll.reparentTo(self.leftFrame)
+                    
+    def selectSecond(self,first):
+        self.firstMonster=first
+
+        #display chosen base monster
+        text="First Monster: "+ first
+        firstM = DirectLabel(text = text, 
+                                 scale = 0.07,
+                                 pos= (-0.2, 0, -0.87), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0),
+                                 text_align = TextNode.ALeft)
+        firstM.reparentTo(self.leftFrame)
+        
+        heading = DirectLabel(text = "Second Monster", 
+                                 scale = 0.09,
+                                 pos= (1.17, 0, 0.8), 
+                                 frameSize = (-0.2, 8.6, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.rightFrame)
+
+        #display power up monsters, can't be same as base monster
+        secondMonster=[]
+        for instrument in beforeBattleOptions.pieces:
+            if (instrument!=first):
+                ins = DirectButton(text = (instrument,instrument, instrument,
+                                           instrument), 
+                                 frameColor = (0, 0, 0, 0),
+                                 borderWidth = (0.005, 0.005),
+                                 text_scale = 0.07, 
+                                 command = self.fuse, 
+                                 extraArgs = [instrument])
+                secondMonster.append(ins)
+
+        secondScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (1, 1.95, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (1.45, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (1.45, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (1.45, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = secondMonster, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        secondScroll.reparentTo(self.rightFrame)
+
+    def determineInstrument(self,first,second):
+        InsCat=["String", "Band", "Voice", "Special"]
+        firstLetter=first[0]
+        secondLetter=second[0]
+        newLetter=chr(int((ord(firstLetter)+ord(secondLetter))*0.5))
+        newLetter=newLetter.lower()
+        if ("a"<=newLetter<="h"):
+            InsType=InsCat[0]
+        elif ("i"<=newLetter<="p"):
+            InsType=InsCat[1]
+        elif ("q"<=newLetter<="x"):
+            InsType=InsCat[2]
+        else:
+            InsType=InsCat[3]
+        String=["StringBass", "Violin"]
+        Band=["Trumpet", "Flute"]
+        Voice=["Microphone","Piano"]
+        Special="MusicNotes"
+        if (InsType=="special"):
+            Ins=special
+        elif ("a"<=newLetter<="m"):
+            Ins=eval(InsType)[0]
+        else:
+            Ins=eval(InsType)[1]
+        
+        self.newMonster=dict()
+        self.newMonster["type"]=InsType
+        self.newMonster["instrument"]=Ins
+
+    def fuse(self,second):
+        self.firstFrame.removeNode()
+        self.secondFrame.removeNode()
+
+        firstMonster=eval("beforeBattleOptions."+self.firstMonster+"Stat")
+
+        #redraw frames
+        self.firstFrame = DirectFrame(frameSize = (0.3, 1.6, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.firstFrame.reparentTo(self.frame)
+        
+        self.midFrame = DirectFrame(frameSize = (0.4, 1.5, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.midFrame.reparentTo(self.firstFrame)
+
+
+        heading = DirectLabel(text = "New Monster!", 
+                                 scale = 0.09,
+                                 pos= (0.65, 0, 0.8), 
+                                 frameSize = (-0.2, 6.5, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.midFrame)
+
+        secondMonster=eval("beforeBattleOptions."+second+"Stat")
+
+        self.determineInstrument(self.firstMonster,second)
+
+        InsMsg= self.newMonster["instrument"]
+        Ins = DirectLabel(text = InsMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        Ins.reparentTo(self.midFrame)
+
+        TypeMsg= "Type: " + self.newMonster["type"]
+        InsType = DirectLabel(text = TypeMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        InsType.reparentTo(self.midFrame)
+
+        #can only have one of each instrument
+        if (self.newMonster["instrument"] in beforeBattleOptions.pieces):
+            self.duplicateInstrument()
+            
+        else:
+            #new stats
+            self.newMonster["level"]=int(0.5*(firstMonster["level"]+ secondMonster["level"]))
+            self.newMonster["hp"]=int(0.5*(firstMonster["hp"]+ secondMonster["hp"]))
+            self.newMonster["attackPower"]=int(0.5*(firstMonster["attackPower"]+
+                                                secondMonster["attackPower"]))
+            self.newMonster["attackRange"]=int(0.5*(firstMonster["attackRange"]+
+                                                secondMonster["attackRange"]))
+            if (self.newMonster["attackRange"]>5):
+                self.newMonster["attackRange"]=5
+            self.newMonster["defense"]=int(0.5*(firstMonster["defense"]+ secondMonster["defense"]))
+            self.newMonster["moveRange"]=int(0.5*(firstMonster["moveRange"]+
+                                                secondMonster["moveRange"]))
+            if (self.newMonster["moveRange"]>4):
+                self.newMonster["moveRange"]=4
+            self.newMonster["speed"]=round(0.5*(firstMonster["speed"]+ secondMonster["speed"]))
+            if (self.newMonster["speed"]>10.0):
+                self.newMonster["moveRange"]=10.0
+
+
+            
+
+            
+
+            levelMsg= "Level: " + str(self.newMonster["level"])
+            level = DirectLabel(text = levelMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, 0.1), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            level.reparentTo(self.midFrame)
+
+            hpMsg= "HP: " + str(self.newMonster["hp"])
+            hp = DirectLabel(text = hpMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, 0), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            hp.reparentTo(self.midFrame)
+
+            attackMsg= "Attack: " + str(self.newMonster["attackPower"])
+            attack = DirectLabel(text = attackMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, -0.1), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            attack.reparentTo(self.midFrame)
+
+            aRangeMsg= "Attack Range: " + str(self.newMonster["attackRange"])
+            aRange = DirectLabel(text = aRangeMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, -0.2), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            aRange.reparentTo(self.midFrame)
+
+            defenseMsg= "Defense: " + str(self.newMonster["defense"])
+            defense = DirectLabel(text = defenseMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, -0.3), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            defense.reparentTo(self.midFrame)
+
+            mRangeMsg= "Move Range: " + str(self.newMonster["moveRange"])
+            mRange = DirectLabel(text = mRangeMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, -0.4), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            mRange.reparentTo(self.midFrame)
+
+            speedMsg= "Speed: " + str(self.newMonster["speed"])
+            speed = DirectLabel(text = speedMsg, 
+                                     scale = 0.09,
+                                     pos= (0.6, 0, -0.5), 
+                                     frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.4),
+                                     text_align = TextNode.ALeft)
+            speed.reparentTo(self.midFrame)
+
+            ##update lists
+            beforeBattleOptions.pieces.remove(self.firstMonster)
+            beforeBattleOptions.pieces.remove(second)
+            beforeBattleOptions.pieces+=[self.newMonster["instrument"]]
+            self.addNewDictionary()
+            
+            
+
+        text="OK"
+        ok=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.95,0,-0.85),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[1])
+        ok.reparentTo(self.firstFrame)
+
+    def duplicateInstrument(self):
+        text="You already have this instrument."
+        dup=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1,0,0),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[1])
+        dup.reparentTo(self.firstFrame)
+        
+
+    def addNewDictionary(self):
+        if (self.newMonster["instrument"]=="Violin"):
+            beforeBattleOptions.ViolinStat=self.newMonster
+        elif (self.newMonster["instrument"]=="StringBass"):
+            beforeBattleOptions.StringBassStat=self.newMonster
+        elif (self.newMonster["instrument"]=="Trumpet"):
+            beforeBattleOptions.TrumpetStat=self.newMonster
+        elif (self.newMonster["instrument"]=="Flute"):
+            beforeBattleOptions.FluteStat=self.newMonster
+        elif (self.newMonster["instrument"]=="Piano"):
+            beforeBattleOptions.PianoStat=self.newMonster
+        elif (self.newMonster["instrument"]=="Microphone"):
+            beforeBattleOptions.MicrophoneStat=self.newMonster
+        elif (self.newMonster["instrument"]=="MusicNotes"):
+            beforeBattleOptions.MusicNotesStat=self.newMonster
+
+##########################gold##################################################################
+
+    def getGold(self):
+        self.frame.removeNode()
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0, 0, 0, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+        
+        if (self.gold==None):
+            maxPos=0
+            for piece in beforeBattleOptions.pieces:
+                monster=eval("beforeBattleOptions."+piece+"Stat")
+                maxPos+=monster["level"]
+            maxPos=2*maxPos
+            #calculate random amount of gold, higher chance of getting
+            #more gold if level of pieces are higher
+            self.gold=random.randint(0,maxPos)
+            text="You got "+str(self.gold)+" gold!"
+            getGold=DirectButton(text = (text, text, text, text), 
+                                   frameColor = (1, 1, 1, 0.7),
+                                   pos=(0.9,0,0),
+                                   text_scale = 0.1, borderWidth = (0.01, 0.01),
+                                   relief=2,
+                                   command = self.optionsScreen,
+                                   extraArgs=[1])
+            getGold.reparentTo(self.frame)
+        else:
+            #can only get gold once per turn
+            text="You have already asked for gold."
+            no=DirectButton(text = (text, text, text, text), 
+                                   frameColor = (1, 1, 1, 0.7),
+                                   pos=(0.9,0,0),
+                                   text_scale = 0.1, borderWidth = (0.01, 0.01),
+                                   relief=2,
+                                   command = self.optionsScreen,
+                                    extraArgs=[1])
+            no.reparentTo(self.frame)
+
+#############################store#################################################
+
+    def store(self):
+        self.frame.removeNode()
+
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        heading = DirectLabel(text = "Store", 
+                                 scale = 0.13,
+                                 pos= (0.75, 0, 0.8), 
+                                 frameSize = (-0.2, 3, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.frame)
+
+        text="Back"
+        back=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(-0.27,0,0.87),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                               extraArgs=[1])
+        back.reparentTo(self.frame)
+
+        #show gold pieces
+        text="Gold:"+str(self.gold)
+        goldDis = DirectLabel(text = text, 
+                                 scale = 0.09,
+                                 pos= (0.15, 0, 0.8), 
+                                 frameSize = (-0.2, 3.4, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        goldDis.reparentTo(self.frame)
+
+        #options
+        text="Increase HP by 10"+"     "+"Cost:5 Gold"
+        hp=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,0.3),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.choosePiece, extraArgs=["hp"])
+        hp.reparentTo(self.frame)
+
+        text="Increase Attack Power by 5"+"     "+"Cost:8 Gold"
+        att=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,0),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.choosePiece, extraArgs=["attackPower"])
+        att.reparentTo(self.frame)
+
+        text="Increase Defense by 3"+"     "+"Cost:7 Gold"
+        defe=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,-0.3),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.choosePiece, extraArgs=["defense"])
+        defe.reparentTo(self.frame)
+
+        text="Increase Speed by 1"+"     "+"Cost:13 Gold"
+        spe=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(0.9,0,-0.6),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.choosePiece, extraArgs=["speed"])
+        spe.reparentTo(self.frame)
+
+    def choosePiece(self, stat):
+        if (stat=="hp"):
+            cost=5
+        elif (stat=="attackPower"):
+            cost=8
+        elif (stat=="defense"):
+            cost=7
+        elif (stat=="speed"):
+            cost=13
+
+        if (cost>self.gold):
+            #make sure player has enough gold
+            self.backFrame = DirectFrame(frameSize = (0.2, 1.6, -0.15, 0.2),
+                                   frameColor = (0.4, 0.9, 0.9, 1),
+                                   )
+            self.backFrame.reparentTo(self.frame)
+            
+            text="You don't have enough gold!"
+            no=DirectButton(text = (text, text, text, text), 
+                                   frameColor = (1, 1, 1, 1),
+                                   pos=(0.9,0,0),
+                                   text_scale = 0.1, borderWidth = (0.01, 0.01),
+                                   relief=2,
+                                   command = self.optionsScreen,
+                                    extraArgs=[1])
+            no.reparentTo(self.frame)
+
+        else:
+            
+            self.frame.removeNode()
+            
+            self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                                   frameColor = (0.4, 0.9, 0.9, 0.4),
+                                   relief = DGG.GROOVE,
+                                   borderWidth = (0.02, 0.02))      
+            self.frame.setPos(-0.9, 0, 0)
+            self.frame.reparentTo(aspect2d)
+            
+            self.firstFrame = DirectFrame(frameSize = (0.3, 1.6, -0.97, 0.97),
+                                   frameColor = (0.4, 0.9, 0.9, 0.2),
+                                   )
+            self.firstFrame.reparentTo(self.frame)
+            
+            self.midFrame = DirectFrame(frameSize = (0.4, 1.5, -0.9, 0.9),
+                                   frameColor = (0.4, 0.9, 0.9, 0.2),
+                                   )
+            self.midFrame.reparentTo(self.firstFrame)
+
+
+            heading = DirectLabel(text = "Choose Monster", 
+                                     scale = 0.09,
+                                     pos= (0.62, 0, 0.8), 
+                                     frameSize = (-0.2, 7.4, -0.2, 0.8), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.3),
+                                     text_align = TextNode.ALeft)
+            heading.reparentTo(self.midFrame)
+
+            #monster list
+            monster=[]
+            for instrument in beforeBattleOptions.pieces:
+                ins = DirectButton(text = (instrument,instrument, instrument,
+                                           instrument), 
+                                 frameColor = (0, 0, 0, 0),
+                                 borderWidth = (0.005, 0.005),
+                                 text_scale = 0.07, 
+                                 command = self.apply, 
+                                 extraArgs = [instrument,stat])
+                monster.append(ins)
+
+            #make scroll list
+            monsterScroll = DirectScrolledList(
+                        pos = (0.8, 0, -0.95),
+                        frameSize = (-0.3, 0.6, 0.2, 1.67),
+                        frameColor = (0.4, 0.9, 0.9, 0.3),
+                        decButton_pos= (0.15, 0, 1.60), #up
+                        decButton_text = "Up",
+                        decButton_text_scale = 0.04,
+                        decButton_borderWidth = (0.005, 0.005),
+                        decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                        incButton_pos= (0.15, 0, 0.3), #down
+                        incButton_text = "Down",
+                        incButton_text_scale = 0.04,
+                        incButton_borderWidth = (0.005, 0.005),
+                        incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                        itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                        itemFrame_pos = (0.15, 0, 1.5),
+                        itemFrame_frameColor = (0, 0, 0, 0),
+                        items = monster, #display items
+                        numItemsVisible = 16,
+                        forceHeight = 0.09
+                        )
+            monsterScroll.reparentTo(self.midFrame)
+
+    def apply(self, instrument,stat):
+        instrument=eval("beforeBattleOptions."+instrument+"Stat")
+        #apply stat changes
+        if (stat=="hp"):
+            instrument[stat]+=10
+            self.gold-=5
+        elif (stat=="attackPower"):
+            instrument[stat]+=5
+            self.gold-=8
+        elif (stat=="defense"):
+            instrument[stat]+=3
+            self.gold-=7
+        elif (stat=="speed"):
+            instrument[stat]+=1
+            self.gold-=13
+
+        
+
+        ###display new stats
+        self.frame.removeNode()
+        
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0.4, 0.9, 0.9, 0.4),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+        
+        self.firstFrame = DirectFrame(frameSize = (0.3, 1.6, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.firstFrame.reparentTo(self.frame)
+        
+        self.midFrame = DirectFrame(frameSize = (0.4, 1.5, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.midFrame.reparentTo(self.firstFrame)
+        
+        InsMsg= instrument["instrument"]
+        Ins = DirectLabel(text = InsMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        Ins.reparentTo(self.midFrame)
+
+        TypeMsg= "Type: " + instrument["type"]
+        InsType = DirectLabel(text = TypeMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        InsType.reparentTo(self.midFrame)
+
+        levelMsg= "Level: " + str(instrument["level"])
+        level = DirectLabel(text = levelMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        level.reparentTo(self.midFrame)
+
+        hpMsg= "HP: " + str(instrument["hp"])
+        hp = DirectLabel(text = hpMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, 0), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        hp.reparentTo(self.midFrame)
+
+        attackMsg= "Attack: " + str(instrument["attackPower"])
+        attack = DirectLabel(text = attackMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, -0.1), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        attack.reparentTo(self.midFrame)
+
+        aRangeMsg= "Attack Range: " + str(instrument["attackRange"])
+        aRange = DirectLabel(text = aRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, -0.2), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        aRange.reparentTo(self.midFrame)
+
+        defenseMsg= "Defense: " + str(instrument["defense"])
+        defense = DirectLabel(text = defenseMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, -0.3), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        defense.reparentTo(self.midFrame)
+
+        mRangeMsg= "Move Range: " + str(instrument["moveRange"])
+        mRange = DirectLabel(text = mRangeMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, -0.4), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        mRange.reparentTo(self.midFrame)
+
+        speedMsg= "Speed: " + str(instrument["speed"])
+        speed = DirectLabel(text = speedMsg, 
+                                 scale = 0.09,
+                                 pos= (0.6, 0, -0.5), 
+                                 frameSize = (-0.2, 7.7, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.4),
+                                 text_align = TextNode.ALeft)
+        speed.reparentTo(self.midFrame)
+
+        text="OK"
+        ok=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.95,0,-0.85),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.optionsScreen,
+                                extraArgs=[1])
+        ok.reparentTo(self.firstFrame)
+
+    def chooseMonsters(self):
+        self.frame.removeNode()
+        choose=chooseMonstersForBattle()
+    
+
+#############################################################################
+class chooseMonstersForBattle(DirectObject):
+    battling=[]
+    def __init__(self):
+        self.limit=3
+        self.showList()
+        
+
+    def showList(self):
+        
+            
+        self.frame = DirectFrame(frameSize = (-2.5, 2.5, -1, 1),
+                               frameColor = (0, 0, 0, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))      
+        self.frame.setPos(-0.9, 0, 0)
+        self.frame.reparentTo(aspect2d)
+
+        
+        
+
+        
+
+
+        #right half
+        self.firstFrame = DirectFrame(frameSize = (0.9, 2.2, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.firstFrame.reparentTo(self.frame)
+        
+
+        self.rightFrame = DirectFrame(frameSize = (1, 2.1, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.rightFrame.reparentTo(self.firstFrame)
+
+        #left half
+        self.secondFrame = DirectFrame(frameSize = (-0.4, 0.85, -0.97, 0.97),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.secondFrame.reparentTo(self.frame)
+        
+        
+
+        self.leftFrame = DirectFrame(frameSize = (-0.3, 0.75, -0.9, 0.9),
+                               frameColor = (0.4, 0.9, 0.9, 0.2),
+                               )
+        self.leftFrame.reparentTo(self.secondFrame)
+
+        heading = DirectLabel(text = "Choose Monster", 
+                                 scale = 0.09,
+                                 pos= (-0.07, 0, 0.8), 
+                                 frameSize = (-0.2, 7.4, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.leftFrame)
+
+        #show limit
+        text=str(len(chooseMonstersForBattle.battling)) +"/"+ str(self.limit)
+        heading = DirectLabel(text = text, 
+                                     scale = 0.09,
+                                     pos= (0.8, 0, 0.8), 
+                                     frameSize = (-0.2, 2, -0.2, 0.7), 
+                                     frameColor = (0.4, 0.9, 0.9, 0.5),
+                                     text_align = TextNode.ALeft)
+        heading.reparentTo(self.leftFrame)
+        
+
+        monsters=[]
+        for instrument in beforeBattleOptions.pieces:
+            ins = DirectButton(text = (instrument,instrument, instrument,
+                                       instrument), 
+                             frameColor = (0, 0, 0, 0),
+                             borderWidth = (0.005, 0.005),
+                             text_scale = 0.07, 
+                             command = self.addToChosen, extraArgs=[instrument] 
+                             )
+            monsters.append(ins)
+
+        #make scroll list
+        firstMonsterScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (-0.3, 0.6, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (0.15, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (0.15, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (0.15, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = monsters, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        firstMonsterScroll.reparentTo(self.leftFrame)
+
+        heading = DirectLabel(text = "Chosen Monsters", 
+                                 scale = 0.09,
+                                 pos= (1.17, 0, 0.8), 
+                                 frameSize = (-0.2, 8.2, -0.2, 0.8), 
+                                 frameColor = (0.4, 0.9, 0.9, 0.3),
+                                 text_align = TextNode.ALeft)
+        heading.reparentTo(self.rightFrame)
+
+        #display power up monsters, can't be same as base monster
+        battlingMonster=[]
+        for instrument in chooseMonstersForBattle.battling:
+            ins = DirectButton(text = (instrument,instrument, instrument,
+                                       instrument), 
+                             frameColor = (0, 0, 0, 0),
+                             borderWidth = (0.005, 0.005),
+                             text_scale = 0.07, 
+                             command = self.removeFromChosen, extraArgs=[instrument] 
+                             )
+            battlingMonster.append(ins)
+
+        secondScroll = DirectScrolledList(
+                    pos = (0.07, 0, -0.95),
+                    frameSize = (1, 1.95, 0.2, 1.67),
+                    frameColor = (0.4, 0.9, 0.9, 0.3),
+                    decButton_pos= (1.45, 0, 1.60), #up
+                    decButton_text = "Up",
+                    decButton_text_scale = 0.04,
+                    decButton_borderWidth = (0.005, 0.005),
+                    decButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    incButton_pos= (1.45, 0, 0.3), #down
+                    incButton_text = "Down",
+                    incButton_text_scale = 0.04,
+                    incButton_borderWidth = (0.005, 0.005),
+                    incButton_frameColor = (0.4, 0.9, 0.9, 0.3),
+                    itemFrame_frameSize = (-0.68, 0.68, -1.40, 0.07), #items
+                    itemFrame_pos = (1.45, 0, 1.5),
+                    itemFrame_frameColor = (0, 0, 0, 0),
+                    items = battlingMonster, #display items
+                    numItemsVisible = 16,
+                    forceHeight = 0.09
+                    )
+        secondScroll.reparentTo(self.rightFrame)
+
+        text="To Battle"
+        battle=DirectButton(text = (text, text, text, text), 
+                               frameColor = (1, 1, 1, 0.7),
+                               pos=(1.9,0,-0.9),
+                               text_scale = 0.1, borderWidth = (0.01, 0.01),
+                               relief=2,
+                               command = self.battle)
+        battle.reparentTo(self.frame)
+
+        
+
+    def addToChosen(self, instrument):
+        beforeBattleOptions.pieces.remove(instrument)
+        chooseMonstersForBattle.battling+=[instrument]
+        
+        if (len(chooseMonstersForBattle.battling)>self.limit):
+            chooseMonstersForBattle.battling.remove(instrument)
+            beforeBattleOptions.pieces+=[instrument]
+            
+        self.frame.removeNode()
+        self.showList()
+
+    def removeFromChosen(self,instrument):
+        chooseMonstersForBattle.battling.remove(instrument)
+        beforeBattleOptions.pieces+=[instrument]
+        self.frame.removeNode()
+        self.showList()
+
+    def battle(self):
+        self.frame.removeNode()
+        b=Battle()
+
+#########################################################################################################################
+#colors
+BLACK = Vec4(0,0,0,1)
+WHITE = Vec4(1,1,1,1)
+HIGHLIGHT = Vec4(0,1,1,1)
+MOVEHIGHLIGHT=Vec4(0,0.5,0.2,1)
+ATTACKHIGHLIGHT=Vec4(0.2, 0.3, 0.6,1)
+PLAYERPIECES=Vec4(0.3, 0.2, 0.3,1)
+ENEMYPIECES=Vec4(1, 0, 0.2,1)
+
+def PointAtZ(z, point, vec):
+  return point + vec * ((z-point.getZ()) / vec.getZ())
+
+
+def SquarePos(i):
+  return Point3((i%8) - 3.5, int(i/8) - 3.5, 0.2)
+
+
+def SquareColor(i):
+  if (i + ((i/8)%2))%2:
+    return BLACK
+  else:
+    return WHITE
+
+
+
+
+class Battle(DirectObject):
+  
+  def __init__(self):
+    
+
+
+    self.accept('escape', sys.exit)              
+    base.disableMouse()                          #Disble mouse camera control
+    camera.setPosHpr(0, -13.75, 6, 0, -25, 0)    #Set the camera
+    #self.setupLights()                           
+    base.setBackgroundColor( 0, 0, 0 )
+   
+    self.picker = CollisionTraverser()            #traverser
+    self.pq     = CollisionHandlerQueue()         #handler
+    
+    self.pickerNode = CollisionNode('mouseRay')
+    
+    self.pickerNP = camera.attachNewNode(self.pickerNode)
+    
+    self.pickerNode.setFromCollideMask(BitMask32.bit(1))
+    self.pickerRay = CollisionRay()               #ray
+    self.pickerNode.addSolid(self.pickerRay)      #Add to collision node
+    #Register the ray 
+    self.picker.addCollider(self.pickerNP, self.pq)
+   
+    self.env = loader.loadModel("TermProject/env")
+    self.env.reparentTo(render)
+    self.env.setScale(7)
+
+    base.enableParticles() #enable use of particles
+    self.p = ParticleEffect()
+
+    #board
+    self.squareRoot = render.attachNewNode("squareRoot")
+    
+    #For each square
+    self.squares = [None for i in range(64)]
+    self.squarePieces = [None for i in range(64)]
+    for i in range(64):
+      
+      self.squares[i] = loader.loadModel("TermProject/square")
+      self.squares[i].reparentTo(self.squareRoot)
+      self.squares[i].setPos(SquarePos(i))
+      self.squares[i].setColor(SquareColor(i))
+      
+      self.squares[i].find("**/polygon").node().setIntoCollideMask(
+        BitMask32.bit(1))
+      #Set a tag on the square's node 
+      self.squares[i].find("**/polygon").node().setTag('square', str(i))
+      
+    #Player Piece Instances
+    index=0
+    for piece in chooseMonstersForBattle.battling:
+      if (piece=="Violin"):
+        self.Violin=Violin(index)
+        self.squarePieces[index]=self.Violin
+      elif (piece=="StringBass"):
+        self.StringBass=StringBass(index)
+        self.squarePieces[index]=self.StringBass
+      elif (piece=="Trumpet"):
+        self.Trumpet=Trumpet(index)
+        self.squarePieces[index]=self.Trumpet
+      elif (piece=="Flute"):
+        self.Flute=Flute(index)
+        self.squarePieces[index]=self.Flute
+      elif (piece=="Piano"):
+        self.Piano=Piano(index)
+        self.squarePieces[index]=self.Piano
+      elif (piece=="Microphone"):
+        self.Microphone=Microphone(index)
+        self.squarePieces[index]=self.Microphone
+      elif (piece=="MusicNotes"):
+        self.MusicNotes=MusicNotes(index)
+        self.squarePieces[index]=self.MusicNotes
+      index+=3
+    
+    self.enemyPieces=[]
+    
+    ##enemy
+    numberOfPieces=6
+    enemyPos=["Trumpet2", "Violin2", "MusicNotes2", "Flute2", "Microphone2", "StringBass2"]
+    for i in xrange(3):
+        index=random.randint(0, numberOfPieces-1)
+        self.enemyPieces+=[enemyPos[index]]
+        enemyPos.remove(enemyPos[index])
+        numberOfPieces-=1
+        
+    
+    index=63
+    for piece in self.enemyPieces:
+      if (piece=="Violin2"):
+        self.Violin2=Violin2(index)
+        self.squarePieces[index]=self.Violin2
+      elif (piece=="StringBass2"):
+        self.StringBass2=StringBass2(index)
+        self.squarePieces[index]=self.StringBass2
+      elif (piece=="Trumpet2"):
+        self.Trumpet2=Trumpet2(index)
+        self.squarePieces[index]=self.Trumpet2
+      elif (piece=="Flute2"):
+        self.Flute2=Flute2(index)
+        self.squarePieces[index]=self.Flute2
+      elif (piece=="Piano2"):
+        self.Piano2=Piano2(index)
+        self.squarePieces[index]=self.Piano2
+      elif (piece=="Microphone2"):
+        self.Microphone2=Microphone2(index)
+        self.squarePieces[index]=self.Microphone2
+      elif (piece=="MusicNotes2"):
+        self.MusicNotes2=MusicNotes2(index)
+        self.squarePieces[index]=self.MusicNotes2
+      index-=3
+
+    
+
+    ##Players
+    self.currentPlayer=1
+
+    ###Movement Variables
+    self.movePieces=copy.copy(chooseMonstersForBattle.battling)
+    self.movedPiece=None
+    self.movableIndexes=[]
+
+    ##Attacking
+    self.attack=False
+    self.attackableIndexes=[]
+    self.attackerIndex=None
+    self.damage=None
+    self.winnerMsg=None
+
+    ###Displays
+    self.damagedone=OnscreenText(style=1, fg=(0,0,0,1), pos=(0,0.7), scale = .1)
+
+    y=0.9
+    for piece in chooseMonstersForBattle.battling:
+      if (piece=="Violin"):
+        self.ViolinHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="StringBass"):
+        self.StringBassHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="Trumpet"):
+        self.TrumpetHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="Flute"):
+        self.FluteHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="Piano"):
+        self.PianoHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="Microphone"):
+        self.MicrophoneHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      elif (piece=="MusicNotes"):
+        self.MusicNotesHp=OnscreenText(style=1, fg=(1,1,1,1), pos=(-1,y),
+                               scale = .07)
+      y-=0.1  
+
+    y=0.9
+    for piece in self.enemyPieces:
+      if (piece=="Violin2"):
+        self.Violin2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="StringBass2"):
+        self.StringBass2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="Trumpet2"):
+        self.Trumpet2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="Flute2"):
+        self.Flute2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="Piano2"):
+        self.Piano2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="Microphone2"):
+        self.Microphone2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      elif (piece=="MusicNotes2"):
+        self.MusicNotes2Hp=OnscreenText(style=1, fg=(1,1,1,1), pos=(1,y),
+                               scale = .07)
+      y-=0.1
+
+    #index of the currently highlited square
+    self.hiSq = False
+    #index of the square where currently dragged piece
+    #was grabbed from
+    self.dragging = False
+
+    #Event Handling
+    self.mouseTask = taskMgr.add(self.mouseTask, 'mouseTask')
+    self.accept("mouse1", self.grabPiece)       #left-click grabs a piece
+    self.accept("mouse1-up", self.releasePiece) #releasing places it
+
+    taskMgr.add(self.SpinCameraTask, "SpinCameraTask")
+
+########Spinning Camera##########
+
+  def SpinCameraTask(self,task): 
+    angledegrees = task.time * 0.6 
+    angleradians = angledegrees * (math.pi / 180.0) 
+    base.camera.setPos(20*math.sin(angleradians),-18.0*math.cos(angleradians),3) 
+    base.camera.setHpr(angledegrees, 0, 0) 
+    return Task.cont
+
+######Players######
+  def changePlayers(self):
+    self.currentPlayer+=1
+    if (self.currentPlayer>2):
+      self.currentPlayer=1
+
+  def changeMovePieces(self):
+    if (self.currentPlayer==1):
+        self.movePieces=copy.copy(chooseMonstersForBattle.battling)
+    else:
+        self.movePieces=copy.copy(self.enemyPieces)
+
+#####Piece########
+  def pieceName(self, index):
+    mem=str(self.squarePieces[index]) #string version of the memory
+    startSlice=10 #name always starts at index 10
+    endSlice=mem.index(" ") #name ends when there is a space
+    name=mem[startSlice:endSlice]
+    return name
+
+  def whosePiece(self, index):
+    name=self.pieceName(index)
+    if (name[-1]=="2"):
+      return 2
+    else:
+      return 1
+
+#####AI##########
+  def findClosestPiece(self):
+    #index is index of moving enemy piece
+    difference=len(self.squarePieces)
+    closestIndex=None
+    for i in xrange(len(self.squarePieces)):
+      if ((self.squarePieces[i]!=None) and (self.whosePiece(i)==1)):
+        for num in self.movableIndexes:
+          if (abs(num-i)<=difference):
+            difference=abs(num-1)
+            closestIndex=num
+    return closestIndex
+
+  def findPieceIndex(self, pieceName):
+    for i in xrange(len(self.squarePieces)):
+      if ((self.squarePieces[i]!=None) and
+          (self.pieceName(i)==pieceName)):
+        return i
+
+  def findLowestHp(self):
+    pieceName=self.pieceName(self.attackableIndexes[0])
+    pieceClass=eval("beforeBattleOptions."+pieceName+"Stat")
+    lowestHp=pieceClass["hp"]
+    lowestIndex=self.attackableIndexes[0]
+    for index in self.attackableIndexes:
+      pieceName=self.pieceName(index)
+      pieceClass=eval("beforeBattleOptions."+pieceName+"Stat")
+      hp=pieceClass["hp"]
+      if (hp<=lowestHp):
+        lowestHp=hp
+        lowestIndex=index
+    return lowestIndex
+      
+      
+      
+        
+      
+    
+
+######Movement#######
+  def findMovableIndexes(self, index):
+    #find piece name
+    pieceClass=eval("beforeBattleOptions."+self.pieceName(index)+"Stat")
+    moveRange=pieceClass["moveRange"]
+    moves=[]
+    increase=index
+    decrease=index
+    changingRange=moveRange-1
+    rowTotal=(changingRange*2)+1
+    #centerRow
+    for distance in xrange(1,moveRange+1):
+        moves+=[index+distance]#right
+        moves+=[index-distance]#left
+        
+    while (changingRange>=0):
+      increase+=8
+      decrease-=8
+      moves+=[increase]
+      moves+=[decrease]
+      for distance in xrange(1,changingRange+1):
+        if (rowTotal!=1):
+          moves+=[increase+distance]#Up right
+          moves+=[increase-distance]#Up left
+          moves+=[decrease+distance]#Down right
+          moves+=[decrease-distance]#Down left
+      rowTotal-=2
+      changingRange-=1
+
+    finalMoves=[]
+    for move in moves:
+      #within board
+      if ((0<=move<len(self.squarePieces)) and
+          (self.squarePieces[move]==None)):
+        finalMoves+=[move]
+    if (self.currentPlayer==1):
+      finalMoves+=[index]
+    #color movable squares
+    for move in finalMoves:
+      self.squares[move].setColor(MOVEHIGHLIGHT)
+    self.movableIndexes=finalMoves
+
+
+###########Attacking########
+  def findAttackableIndexes(self, index):
+    #find piece name
+    pieceClass=eval("beforeBattleOptions."+self.pieceName(index)+"Stat")
+    attackRange=pieceClass["attackRange"]
+    moves=[]
+    increase=index
+    decrease=index
+    changingRange=attackRange-1
+    rowTotal=(changingRange*2)+1
+    #centerRow
+    for distance in xrange(1,attackRange+1):
+        moves+=[index+distance]#right
+        moves+=[index-distance]#left
+        
+    while (changingRange>=0):
+      increase+=8
+      decrease-=8
+      moves+=[increase]
+      moves+=[decrease]
+      for distance in xrange(1,changingRange+1):
+        if (rowTotal!=1):
+          moves+=[increase+distance]#Up right
+          moves+=[increase-distance]#Up left
+          moves+=[decrease+distance]#Down right
+          moves+=[decrease-distance]#Down left
+      rowTotal-=2
+      changingRange-=1
+
+    finalMoves=[]
+    for move in moves:
+      #within board
+      if (0<=move<len(self.squarePieces)):
+        finalMoves+=[move]
+
+    #filter out enemy pieces
+    attackables=[]
+    for move in finalMoves:
+      if (self.squarePieces[move]!=None):
+        if ((self.currentPlayer==1) and
+            (self.whosePiece(move)==2)):
+          attackables+=[move]
+        elif ((self.currentPlayer==2) and
+            (self.whosePiece(move)==1)):
+          attackables+=[move]      
+    self.attackableIndexes=attackables
+    
+    #color movable squares
+    for move in finalMoves:
+      self.squares[move].setColor(ATTACKHIGHLIGHT)
+
+  def determineDamage(self, attackedIndex):
+    attacker=eval("beforeBattleOptions."+self.pieceName(self.attackerIndex)+"Stat")
+    attacked=eval("beforeBattleOptions."+self.pieceName(attackedIndex)+"Stat")
+    baseDamage=attacker["attackPower"]
+    enemyDefense=attacked["defense"]
+    damage=baseDamage-enemyDefense
+    if (damage<0):
+      damage=0
+    enemySpeed=int(attacked["speed"])
+    missProb=random.randint(1,10)
+    if (missProb <=enemySpeed):
+      damage=0
+    self.damage=damage
+
+  def dealDamage(self,attackedIndex):
+    attacked=eval("beforeBattleOptions."+self.pieceName(attackedIndex)+"Stat")
+    attacked["hp"]=attacked["hp"]-self.damage
+    if (attacked["hp"]<=0):
+        pieceName=self.pieceName(attackedIndex)
+        attackedClass=eval(pieceName)
+        #displays
+        attackedClass.remove(eval("self."+pieceName))
+        pieceHp=eval("self."+pieceName+"Hp")
+        pieceHp.setText(pieceName+ " HP:0")
+        #remove from list
+        if (self.currentPlayer==1):
+          self.enemyPieces.remove(pieceName)
+        elif (self.currentPlayer==2):
+          chooseMonstersForBattle.battling.remove(pieceName)
+        self.squarePieces[attackedIndex]=None
+      
+    
+
+    
+#######Displays#######
+  def returnOriginalSquareColor(self):
+    for i in range(64):
+      self.squares[i].setColor(SquareColor(i))
+
+########Particles#######
+  def loadParticleConfig(self, file, index):
+    self.p.cleanup()
+    self.p = ParticleEffect()
+    self.p.loadConfig(Filename(file))        
+    #Sets particles to render
+    self.p.start(self.squareRoot)
+    self.p.setPos(SquarePos(index))
+    def stopParticle(task):
+      self.p.disable()
+    stop=taskMgr.doMethodLater(1, stopParticle, "stop particle")
+
+
+#####Check for Win######
+    
+  def checkWin(self):
+    if (chooseMonstersForBattle.battling==[]):
+      self.winnerMsg="Maloy Wins!"
+    elif (self.enemyPieces==[]):
+      self.winnerMsg="Gary Wins!"
+
+
+  def drawWinner(self):
+    if (self.winnerMsg!=None):
+      self.win=OnscreenText(
+              text=self.winnerMsg,
+              style=1, fg=(0,0,0,1), pos=(0,0.5), scale = .2)
+
+      for instrument in chooseMonstersForBattle.battling:
+        beforeBattleOptions.pieces+=[instrument]
+
+      text="OK"
+      OK=DirectButton(text = (text, text, text, text), 
+                             frameColor = (1, 1, 1, 1),
+                             pos=(1,0,-0.8),
+                             text_scale = 0.1, borderWidth = (0.01, 0.01),
+                             relief=2,
+                             command = self.options)
+      OK.reparentTo(aspect2d)
+
+  def options(self):
+    backFrame=DirectFrame(frameSize = (-0.4, 0.4, -0.7, 0.8),
+                               frameColor = (0, 0.4, 0.9, 0.8),
+                               relief = DGG.GROOVE,
+                               borderWidth = (0.02, 0.02))
+    backFrame.reparentTo(aspect2d)
+
+    text="End Game" #close the window
+    create=DirectButton(text = (text, text, text, text), 
+                           frameColor = (1, 1, 1, 0.7),
+                           pos=(0,0,0),
+                           text_scale = 0.1, borderWidth = (0.01, 0.01),
+                           relief=2,
+                           command = self.newGame)
+    create.reparentTo(backFrame)
+
+  def newGame(self):
+      sys.exit()
+    
+#######Mouse########
+  def mouseTask(self, task):
+    
+    
+    #if highlighted
+    if self.hiSq is not False:
+      self.squares[self.hiSq].setColor(SquareColor(self.hiSq))
+      self.hiSq = False
+      
+    if base.mouseWatcherNode.hasMouse():
+      #mouse position
+      mpos = base.mouseWatcherNode.getMouse()
+      
+      #Set position of ray based on mouse position
+      self.pickerRay.setFromLens(base.camNode, mpos.getX(), mpos.getY())
+      
+     
+      if self.dragging is not False:
+        #point of ray
+        nearPoint = render.getRelativePoint(camera, self.pickerRay.getOrigin())
+        #direction of ray
+        nearVec = render.getRelativeVector(camera, self.pickerRay.getDirection())
+        self.squarePieces[self.dragging].obj.setPos(
+          PointAtZ(0.5, nearPoint, nearVec))
+
+      #collision stuff
+      self.picker.traverse(self.squareRoot)
+      if self.pq.getNumEntries() > 0:
+        #if hit something
+        self.pq.sortEntries()
+        i = int(self.pq.getEntry(0).getIntoNode().getTag('square'))
+        #Set the highlight on the picked square
+        self.squares[i].setColor(HIGHLIGHT)
+        self.hiSq = i
+
+      #Display updates
+      if (self.damage!=0):
+          self.damagedone.setText("Damage= -"+str(self.damage))
+      else:
+          self.damagedone.setText("Missed!")
+
+      for i in xrange(len(self.squarePieces)):
+          if (self.squarePieces[i]!=None):
+            piece=self.pieceName(i)
+            hpPiece=eval("beforeBattleOptions."+piece+"Stat")
+            nhpPiece=eval("self."+piece+"Hp")
+            if (hpPiece["hp"]>0):
+                nhpPiece.setText(piece+ " HP:"+str(hpPiece["hp"]))
+            else:
+                nhpPiece.setText(piece+ " HP:0")
+                
+      # color occupied squares
+      for i in xrange(len(self.squarePieces)):
+        if (self.squarePieces[i]!=None):
+          if (self.whosePiece(i)==1):
+            self.squares[i].setColor(PLAYERPIECES)
+          elif (self.whosePiece(i)==2):
+            self.squares[i].setColor(ENEMYPIECES)
+
+      #AI
+      if (self.currentPlayer==2):
+        for piece in self.movePieces:
+          #####moving
+          pieceIndex=self.findPieceIndex(piece)
+          self.findMovableIndexes(pieceIndex)
+          moveIndex=self.findClosestPiece()
+          if (moveIndex==None):
+              index=random.randint(0,len(self.movableIndexes)-1)
+              moveIndex=self.movableIndexes[index]
+          instrument=eval("self."+piece)
+          self.squarePieces[pieceIndex].obj.setPos(SquarePos(moveIndex))
+          self.squarePieces[moveIndex]=instrument
+          self.squarePieces[pieceIndex]=None
+          self.returnOriginalSquareColor()
+          ####attacking
+          self.findAttackableIndexes(moveIndex)
+          if (self.attackableIndexes!=[]):
+            attackIndex=self.findLowestHp()
+            self.determineDamage(attackIndex)
+            self.dealDamage(attackIndex)
+            self.loadParticleConfig('steam.ptf',attackIndex)
+            self.checkWin()
+            self.drawWinner()
+            
+            
+        self.returnOriginalSquareColor()  
+        self.changePlayers()
+        self.changeMovePieces()
+
+            
+    return Task.cont
+
+  def grabPiece(self):
+    if (self.winnerMsg==None):
+      if (self.hiSq is not False and
+        self.squarePieces[self.hiSq]):
+        if (self.attack==False): #move
+          #if the piece is the current player's
+          if (self.pieceName(self.hiSq) in self.movePieces):
+            #find the indexes that the piece can move
+            self.findMovableIndexes(self.hiSq)
+            self.dragging = self.hiSq
+            self.hiSq = False
+        else: #attack
+          self.determineDamage(self.hiSq)
+          self.dealDamage(self.hiSq)
+          self.loadParticleConfig('steam.ptf',self.hiSq)
+          self.checkWin()
+          self.drawWinner()
+        
+              
+  def releasePiece(self):
+    if (self.attack==False):
+      if self.dragging is not False:   
+        #not on a square or on a square with another piece or not in moveRange
+        #place back to original position.
+        if ((self.hiSq is False) or (self.squarePieces[self.hiSq]!=None)
+            or (self.hiSq not in self.movableIndexes)):
+          self.squarePieces[self.dragging].obj.setPos(
+            SquarePos(self.dragging))
+        else:
+          #place on new square
+          self.squarePieces[self.dragging].obj.setPos(SquarePos(self.hiSq))
+          self.squarePieces[self.hiSq]=self.squarePieces[self.dragging]
+          self.squarePieces[self.dragging]=None
+          self.returnOriginalSquareColor()
+          self.attackerIndex=self.hiSq
+
+
+          #show attack range
+          self.findAttackableIndexes(self.hiSq)
+          if (self.attackableIndexes!=[]): #there is something to attack
+            self.attack=True
+          else:
+            name=self.pieceName(self.hiSq)
+            self.movePieces.remove(name)
+            self.returnOriginalSquareColor()
+            
+    else:
+      #remove from self.movePieces
+      name=self.pieceName(self.attackerIndex)
+      self.movePieces.remove(name)
+      self.returnOriginalSquareColor()
+      self.attack=False
+
+    
+
+    if (self.movePieces==[]): #all pieces have moved
+      self.changePlayers()
+      self.changeMovePieces()
+      
+    
+        
+
+        
+    #reset
+    self.dragging = False
+
+
+      
+#################################################################################
+class Piece(DirectObject):
+  def __init__(self, square):
+    self.obj = loader.loadModel(self.model)
+    self.obj.reparentTo(render)
+    self.obj_tex=loader.loadTexture(self.tex)
+    self.obj.setTexture(self.obj_tex,1)
+    self.obj.setPos(SquarePos(square))
+
+  def remove(self):
+    self.obj.detachNode()
+
+#Pieces
+##player
+class Violin(Piece):
+  model="TermProject/violinScaled2"
+  tex="TermProject/wood.jpg"
+
+class StringBass(Piece):
+  model="TermProject/battlebass"
+  tex="TermProject/wood2.jpg"
+
+
+class Flute(Piece):
+  model="TermProject/battleFlute"
+  tex="TermProject/flutemetal.jpg"
+
+class Trumpet(Piece):
+  model="TermProject/battletrumpet"
+  tex="TermProject/brass.jpg"
+
+class Microphone(Piece):
+  model="TermProject/battlemicrophone"
+  tex="TermProject/metalm.jpg"
+
+class Piano(Piece):
+  model="TermProject/piano"
+  tex="TermProject/pianowood.jpg"
+
+class MusicNotes(Piece):
+  model="TermProject/battlemusicnotes"
+  tex="TermProject/white.jpg"
+
+##enemies
+class Trumpet2(Piece):
+  model="TermProject/battletrumpet"
+  tex="TermProject/brass2.jpg"
+
+class Violin2(Piece):
+  model="TermProject/violinScaled1"
+  tex="TermProject/wood2.jpg"
+
+class Microphone2(Piece):
+  model="TermProject/battlemicrophone"
+  tex="TermProject/metalm2.jpg"
+
+class Flute2(Piece):
+  model="TermProject/battleFlute"
+  tex="TermProject/flutemetal.jpg"
+
+
+class MusicNotes2(Piece):
+  model="TermProject/battlemusicnotes"
+  tex="TermProject/white2.jpg"
+
+class StringBass2(Piece):
+  model="TermProject/battlebass"
+  tex="TermProject/wood.jpg"
+
+
+
+
+
+
+
+s=StartScreen()
+run()
+        
+
